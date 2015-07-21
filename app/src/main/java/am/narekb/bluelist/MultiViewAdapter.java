@@ -22,7 +22,7 @@ public class MultiViewAdapter extends BaseAdapter {
     private class ViewHolder {
         TextView name;
         TextView price;
-        ImageView image;
+        //ImageView image;
     }
 
     public MultiViewAdapter(Context context, ArrayList<Ad> objects, int resource) {
@@ -55,14 +55,14 @@ public class MultiViewAdapter extends BaseAdapter {
             convertView = inflater.inflate(itemLayout, null);
             holder.name = (TextView) convertView.findViewById(R.id.adTitle);
             holder.price = (TextView) convertView.findViewById(R.id.adPrice);
-            holder.image = (ImageView) convertView.findViewById(R.id.image);
+            //holder.image = (ImageView) convertView.findViewById(R.id.image);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.name.setText(ads.get(position).getName());
         holder.price.setText(ads.get(position).getPrice());
-        holder.image.setImageBitmap(bm); //TODO: Use Volley or UrlImageViewHelper to get product picture
+        //holder.image.setImageBitmap(bm); //TODO: Use Volley or UrlImageViewHelper to get product picture
         return convertView;
 
     }

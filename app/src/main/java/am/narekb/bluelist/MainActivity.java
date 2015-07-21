@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -21,8 +22,6 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     MultiViewAdapter mva;
     ArrayList<Ad> adList;
+    ListView adListView;
 
 
 
@@ -45,7 +45,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        adList = new ArrayList<Ad>();
         mva = new MultiViewAdapter(this, adList, R.layout.item_layout);
+
+        adListView = (ListView)findViewById(R.id.adListView);
+        adListView.setAdapter(mva);
 
         searchField = (EditText)findViewById(R.id.search);
         searchField.setVisibility(View.GONE); //Hide search line at first
