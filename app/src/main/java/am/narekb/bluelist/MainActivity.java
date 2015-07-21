@@ -8,13 +8,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.SimpleAdapter;
+
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.jsoup.select.Selector;
+
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,9 +31,16 @@ public class MainActivity extends AppCompatActivity {
     Document doc;
     Elements els;
 
+    SimpleAdapter sa;
+    List<Map<String,String>> adList;
+
+    String adText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        adList = new ArrayList<Map<String,String[]>>();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -104,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         try {
                 doc = Jsoup.connect("www.list.am/category")
                             .data("q", query) //Hopefully this IS ?q=...
+                            .data("gl", "1")
                             .userAgent("Mozilla")
                             .timeout(3000)
                             .get();
@@ -113,7 +128,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //START PARSING RESULTS
-        els = doc.select("tr");
+        els = doc.select("div.i"); //divs of class i contain ads in grid view (&gl=1)
+
+        for(Element ad : els) {
+            String url = "http://www.list.am" + ad.select("a[href]").attr("href");
+            String imgUrl = ad.select("a > img").attr("src");
+            String title = ad.select("div.l > a").text();
+            String price = ad.select("div.l2 > div.l").text();
+        }
     }
 
 }
