@@ -1,5 +1,6 @@
 package am.narekb.bluelist;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -9,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 
 import org.jsoup.Jsoup;
@@ -21,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,21 +32,20 @@ public class MainActivity extends AppCompatActivity {
     Document doc;
     Elements els;
 
-    SimpleAdapter sa;
-    List<Map<String,String>> adList;
+    MultiViewAdapter mva;
+    ArrayList<Ad> adList;
 
-    String adText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        adList = new ArrayList<Map<String,String[]>>();
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mva = new MultiViewAdapter(this, adList, R.layout.item_layout);
 
         searchField = (EditText)findViewById(R.id.search);
         searchField.setVisibility(View.GONE); //Hide search line at first
@@ -98,12 +98,14 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
-            if(hasSearchFocus) {
+            if(!hasSearchFocus) {
                 searchField.setVisibility(View.VISIBLE);
                 searchField.requestFocus();
+                hasSearchFocus = true;
             }
             else {
                 searchField.setVisibility(View.GONE);
+                hasSearchFocus = false;
             }
             return true;
         }
@@ -113,29 +115,37 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void downloadResults(String query) {
-        query.replace(' ', '+');
+        query = query.trim().replaceAll(" ", "+");
 
-        try {
-                doc = Jsoup.connect("www.list.am/category")
-                            .data("q", query) //Hopefully this IS ?q=...
-                            .data("gl", "1")
-                            .userAgent("Mozilla")
-                            .timeout(3000)
-                            .get();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        new AsyncTask<String, Void, Void> () {
 
-        //START PARSING RESULTS
-        els = doc.select("div.i"); //divs of class i contain ads in grid view (&gl=1)
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    doc = Jsoup.connect("http://www.list.am/category?q=" + params[0] + "&gl=1").get();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
 
-        for(Element ad : els) {
-            String url = "http://www.list.am" + ad.select("a[href]").attr("href");
-            String imgUrl = ad.select("a > img").attr("src");
-            String title = ad.select("div.l > a").text();
-            String price = ad.select("div.l2 > div.l").text();
-        }
+            @Override
+            protected void onPostExecute(Void result) {
+                //START PARSING RESULTS
+                els = doc.select("div.i"); //divs of class i contain the ads in grid view (&gl=1)
+
+                for(Element ad : els) {
+                    String url = "http://www.list.am" + ad.select("a[href]").attr("href");
+                    String imgUrl = ad.select("a > img").attr("src");
+                    String title = ad.select("div.l > a").text();
+                    String price = ad.select("div.l2 > div.l").text();
+
+                    adList.add(new Ad(title, price, url, imgUrl));
+                    mva.notifyDataSetChanged();
+                }
+            }
+        }.execute(query);
     }
 
 }

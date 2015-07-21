@@ -2,6 +2,7 @@ package am.narekb.bluelist;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ public class MultiViewAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     private ArrayList<Ad> ads;
     private int itemLayout;
+    private Bitmap bm;
 
     private class ViewHolder {
         TextView name;
@@ -31,7 +33,7 @@ public class MultiViewAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return 0;
+        return ads.size();
     }
 
     @Override
@@ -60,7 +62,7 @@ public class MultiViewAdapter extends BaseAdapter {
         }
         holder.name.setText(ads.get(position).getName());
         holder.price.setText(ads.get(position).getPrice());
-        holder.image.setImageBitmap(); //TODO
+        holder.image.setImageBitmap(bm); //TODO: Use Volley or UrlImageViewHelper to get product picture
         return convertView;
 
     }
