@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        adList = new ArrayList<Ad>();
+        if(adList == null) {adList = new ArrayList<Ad>();} //Do not recreate on orientation change
+
         mva = new MultiViewAdapter(this, adList, R.layout.item_layout);
 
         adListView = (ListView)findViewById(R.id.adListView);
@@ -62,16 +63,17 @@ public class MainActivity extends AppCompatActivity {
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press
                     searchField.setVisibility(View.GONE);
+                    hasSearchFocus = false;
                     searchQuery = searchField.getText().toString().trim();
                     if (searchQuery != "") {
                         downloadResults(searchQuery);
                     }
-                return true;
-            }
+                    return true;
+                }
 
-            return false;
-        }
-    }); //Hide search field when pressing Enter
+                return false;
+            }
+        }); //Hide search field when pressing Enter
 
 
         searchField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
                     searchField.setVisibility(View.GONE);
+                    hasSearchFocus = false;
                 }
             }
         }); //Hide search field when losing focus
@@ -120,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadResults(String query) {
         query = query.trim().replaceAll(" ", "+");
+        adList.clear(); //Avoid keeping results from old searches
 
         new AsyncTask<String, Void, Void> () {
 
@@ -141,9 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
                 for(Element ad : els) {
                     String url = "http://www.list.am" + ad.select("a[href]").attr("href");
-                    String imgUrl = ad.select("a > img").attr("src");
+                    String imgUrl = "http:" + ad.select("a > img").attr("src");
                     String title = ad.select("div.l > a").text();
                     String price = ad.select("div.l2 > div.l").text();
+
 
                     adList.add(new Ad(title, price, url, imgUrl));
                     mva.notifyDataSetChanged();
